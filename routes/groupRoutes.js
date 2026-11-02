@@ -4,12 +4,18 @@ const Group = require("../models/Group");
 
 router.post("/", async (req, res) => {
   try {
-    const { name, userId } = req.body;
+    const { name, userId, members = [] } = req.body;
+
+    if (!name || !userId) {
+      return res.status(400).json({ message: "name and userId are required" });
+    }
+
+    const allMembers = [...new Set([userId, ...members])];
 
     const newGroup = new Group({
       name,
       createdBy: userId,
-      members: [userId],
+      members: allMembers,
     });
 
     await newGroup.save();
@@ -27,8 +33,8 @@ router.post("/:id/members", async (req, res) => {
     const { userId } = req.body;
     const id = req.params.id;
 
-    if(userId == null){
-      return res.status(400).json({message:"User can never be null"})
+    if (userId == null) {
+      return res.status(400).json({ message: "User can never be null" });
     }
 
     const group = await Group.findById(id);
