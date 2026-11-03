@@ -45,8 +45,6 @@ router.get("/:groupId/expenses", async (req, res) => {
   }
 });
 
-
-
 router.get("/:groupId/balances", async (req, res) => {
   try {
     const groupId = req.params.groupId;
@@ -54,7 +52,7 @@ router.get("/:groupId/balances", async (req, res) => {
     const expenses = await Expense.find({ group: groupId });
     const settlements = await Settlement.find({ group: groupId });
 
-    console.log("Settlements found:", settlements);  // ADD THIS
+    console.log("Settlements found:", settlements); // ADD THIS
 
     const balances = {};
 
@@ -70,7 +68,7 @@ router.get("/:groupId/balances", async (req, res) => {
     });
 
     settlements.forEach((settlement) => {
-      console.log("Applying settlement:", settlement);  // ADD THIS
+      console.log("Applying settlement:", settlement); // ADD THIS
       balances[settlement.paidBy] += settlement.amount;
       balances[settlement.paidTo] -= settlement.amount;
     });
@@ -78,6 +76,25 @@ router.get("/:groupId/balances", async (req, res) => {
     res.status(200).json(balances);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
+  }
+});
+
+router.delete("/:groupId/expenses/:expenseId", async (req, res) => {
+  try {
+    const { groupId, expenseId } = req.params;
+
+    const expense = await Expense.findOneAndDelete({
+      _id: expenseId,
+      group: groupId,
+    });
+
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+
+    res.status(200).json({ message: "Expense deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
